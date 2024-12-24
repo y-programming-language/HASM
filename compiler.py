@@ -12,7 +12,7 @@ def codegen_elf64(program):
     for i in std:
         result.append(i)
     i = 0
-    while program[i] != '_main:':  # there should always be _main:
+    while program[i] != '_main:':  # there should always be _main: on code
         i += 1
     i += 1
     dic = {}
@@ -31,6 +31,7 @@ def codegen_elf64(program):
             value = " ".join(parts[3:])
             dic[vname] = value
             data.append(f'{vname} db {value}, 10, 0')
+
         elif parts[0] == 'exit':
             result.append(f'mov rdi, {parts[1]}')
             result.append('mov rax, 60')
