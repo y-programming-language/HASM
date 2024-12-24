@@ -7,48 +7,65 @@ std = [
 ]
 
 def codegen_elf64(program):
-    result = ['section .text', 'global _start']
+    result = ['section .text', 'global _start', 'extern stdout']
     data = ['section .data']
-    for i in std:
-        result.append(i)
+    labels = {}
+    variables = {}
     i = 0
-    while program[i] != '_main:':  # there should always be _main: on code
-        i += 1
-    i += 1
-    dic = {}
 
     result.append('_start:')
+
     while i < len(program):
-        parts = program[i].split(' ')
-        if parts[0] == 'call':
+        line = program[i].strip()
+
+        if ':' in line:
+            label = line.split(':')[0].strip()
+            labels[label] = i
+            result.append(f'{label}:')
+
+        elif line.startswith('call'):
+            parts = line.split(' ')
             if parts[1] == 'stdout':
                 result.append(f'mov rsi, {parts[2]}')
-                result.append(f'mov rdx, {len(dic[parts[2]])}')
+                result.append(f'mov rdx, {len(variables[parts[2]])}')
                 result.append('call stdout')
 
-        elif parts[0] == 'string':
+        elif line.startswith('LC'):
+            parts = line.split(' ')
+            label = parts[1]
+            if label in labels:
+                result.append(f'push rbx')
+                result.append(f'jmp {label}')
+                result.append(f'pop rbx')
+            else:
+                result.append(f'; Error: label {label} not found')
+
+        elif line.startswith('string'):
+            parts = line.split(' ')
             vname = parts[1]
             value = " ".join(parts[3:])
-            dic[vname] = value
+            variables[vname] = value
             data.append(f'{vname} db {value}, 10, 0')
 
-        elif parts[0] == 'exit':
+        elif line.startswith('exit'):
+            parts = line.split(' ')
             result.append(f'mov rdi, {parts[1]}')
             result.append('mov rax, 60')
             result.append('syscall')
             break
+
         i += 1
+
     for line in data:
         result.append(line)
     return result
 
 def run_shell_commands():
-    # Change to the appropriate directory
-    os.makedirs('asm', exist_ok=True)
+    asm_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'asm')
+    os.makedirs(asm_dir, exist_ok=True)
     os.makedirs('bin', exist_ok=True)
 
-    # Run the nasm and ld commands
-    subprocess.run(['nasm', '-f', 'elf64', 'asm/main.s', '-o', 'bin/main.o'], check=True)
+    subprocess.run(['nasm', '-f', 'elf64', os.path.join(asm_dir, 'main.s'), '-o', 'bin/main.o'], check=True)
     subprocess.run(['nasm', '-f', 'elf64', 'asm/std.s', '-o', 'bin/std.o'], check=True)
     subprocess.run(['ld', '-o', 'main', 'bin/main.o', 'bin/std.o'], check=True)
     print("Build process completed successfully!")
@@ -72,10 +89,9 @@ if __name__ == '__main__':
     if version == 'ELF64':
         finish = codegen_elf64(program)
     
-    # Write the generated assembly code to the correct file
-    with open('asm/main.s', 'w') as file:
+    asm_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'asm')
+    with open(os.path.join(asm_dir, 'main.s'), 'w') as file:
         for line in finish:
             file.write(line + '\n')
     
-    # After generating the assembly, run the build commands
     run_shell_commands()
