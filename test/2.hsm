@@ -2,6 +2,7 @@ output(ELF64)
 test:
     string msg1 = "hello world!"
     call stdout msg1
+    ret
 _main:
-	lc msg1
+	lc test
 	exit 0 

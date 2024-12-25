@@ -4,6 +4,7 @@ compare:
 	int b = 2
 	int c = 0
 	equal c a b
+    ret
 _main:
 	lc compare
 	exit c

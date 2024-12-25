@@ -2,10 +2,12 @@ output(ELF64)
 final:
     string msg = "a == b"
     call stdout msg
+    exit 0
+    ret
 _main:
-	int a = 0
+	int a = 2
 	int b = 2
 	int c = 0
-	more c a b
+	equal c a b
     lc final c
 	exit 0

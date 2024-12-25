@@ -6,4 +6,3 @@ stdout:
     mov rdi, 1
     syscall
     ret
-
