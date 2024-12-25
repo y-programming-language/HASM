@@ -112,15 +112,16 @@ def codegen_elf64(program):
     return result
 
 
-def run_shell_commands():
+def run_shell_commands(output_name):
     asm_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'asm')
     os.makedirs(asm_dir, exist_ok=True)
     os.makedirs('bin', exist_ok=True)
 
     subprocess.run(['nasm', '-f', 'elf64', os.path.join(asm_dir, 'main.s'), '-o', 'bin/main.o'], check=True)
     subprocess.run(['nasm', '-f', 'elf64', 'asm/std.s', '-o', 'bin/std.o'], check=True)
-    subprocess.run(['ld', '-o', 'main', 'bin/main.o', 'bin/std.o'], check=True)
-    print("Build process completed successfully!")
+    subprocess.run(['ld', '-o', output_name, 'bin/main.o', 'bin/std.o'], check=True)
+    print(f"Build process completed successfully! Output: {output_name}")
+
 
 if __name__ == '__main__':
     filename = sys.argv[1]
@@ -146,4 +147,5 @@ if __name__ == '__main__':
         for line in finish:
             file.write(line + '\n')
     
-    run_shell_commands()
+    output_name = os.path.splitext(os.path.basename(filename))[0]
+    run_shell_commands(output_name)
