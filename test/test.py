@@ -38,7 +38,9 @@ if __name__ == "__main__":
         ('test/1.hsm', 'hello world!'),
         ('test/2.hsm', 'hello world!'),
         ('test/3.hsm', '1'),
-        ('test/4.hsm', '0')
+        ('test/4.hsm', '0'),
+        ('test/5.hsm', '0'),
+        ('test/6.hsm', '1'),
     ]
 
     for test_case in test_cases:

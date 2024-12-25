@@ -1,0 +1,9 @@
+output(ELF64)
+compare:
+    int a = 0
+	int b = 2
+	int c = 0
+	more c a b
+_main:
+    lc compare
+	exit c
