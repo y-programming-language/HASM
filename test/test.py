@@ -41,6 +41,7 @@ if __name__ == "__main__":
         ('test/4.hsm', '0'),
         ('test/5.hsm', '0'),
         ('test/6.hsm', '1'),
+        ('test/7.hsm', 'a == b')
     ]
 
     for test_case in test_cases:

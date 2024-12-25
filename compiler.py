@@ -39,9 +39,22 @@ def codegen_elf64(program):
             parts = line.split(' ')
             label = parts[1]
             if label in labels:
-                result.append(f'push rbx')
-                result.append(f'jmp {label}')
-                result.append(f'pop rbx')
+                if len(parts) >= 3:
+                    # then its 'lc label smt'
+                    if parts[2] in variables:
+                        condition = variables[parts[2]]
+                    else:
+                        condition = parts[2]
+                        
+                    result.append(f'mov eax, [{condition}]')
+                    result.append('cmp eax, 0')
+                    result.append(f'jne {label}') # add so it jump
+                    # don't over complicate, since its for if !0 then jmp label do this way
+                else:
+                    # then its only 'lc label'
+                    result.append(f'push rbx')
+                    result.append(f'jmp {label}')
+                    result.append(f'pop rbx')
             else:
                 result.append(f'; Error: label {label} not found')
 
