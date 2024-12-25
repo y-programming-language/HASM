@@ -3,6 +3,47 @@ import subprocess
 import os
 
 
+def eva(line, result, variables):
+    parts = line.split(' ')
+    vname = parts[0]
+    expression = " ".join(parts[2:])
+    
+    if expression.isdigit():  # Handle simple case like a = 3
+        result.append(f'mov dword [{vname}], {expression}')
+    elif expression in variables:  # Handle case like a = c
+        result.append(f'mov eax, [{variables[expression]}]')
+        result.append(f'mov [{vname}], eax')
+    else:  # Handle arithmetic expressions like a = a + 1, a = b * 2, etc.
+        # Extract the operator and operands
+        op = ''
+        if '+' in expression:
+            op = '+'
+        elif '-' in expression:
+            op = '-'
+        elif '*' in expression:
+            op = '*'
+        elif '/' in expression:
+            op = '/'
+        
+        if op:
+            operands = expression.split(op)
+            result.append(f'mov eax, [{operands[0].strip()}]')  # Load the first operand
+            if operands[1].strip().isdigit():
+                result.append(f'mov ebx, {operands[1].strip()}')
+            else:
+                result.append(f'mov ebx, [{operands[1].strip()}]')  # Load the second operand
+        
+            if op == '+':
+                result.append(f'add eax, ebx')
+            elif op == '-':
+                result.append(f'sub eax, ebx')
+            elif op == '*':
+                result.append(f'imul eax, ebx')
+            elif op == '/':
+                result.append(f'div ebx')  # Note: div requires eax, edx as inputs
+            
+            result.append(f'mov dword [{vname}], eax')
+
 
 def run_elf64(line, result, data, labels, variables, i):
     if line.startswith('$') or line == '_main:':
@@ -56,8 +97,9 @@ def run_elf64(line, result, data, labels, variables, i):
         c = parts[1]
         a = parts[2]
         b = parts[3]
-        result.append(f'mov eax, [{a}]')
         result.append(f'mov ebx, [{b}]')
+        result.append(f'mov eax, [{a}]')
+        
         result.append(f'cmp eax, ebx')
         result.append(f'setl al')
         result.append(f'and al, 1')
@@ -98,6 +140,10 @@ def run_elf64(line, result, data, labels, variables, i):
         return
     elif line == 'ret':
         result.append('ret')
+    elif '=' in line:  # This is where eva() handles the variable assignment
+        eva(line, result, variables)
+
+
 def codegen_elf64(program):
     result = ['section .text', 'global _start', 'extern stdout']
     data = ['section .data']
@@ -121,8 +167,9 @@ def codegen_elf64(program):
 
     for line in data:
         result.append(line)
-    
+
     return result
+
 
 def run_shell_commands(output_name):
     asm_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'asm')
@@ -133,6 +180,7 @@ def run_shell_commands(output_name):
     subprocess.run(['nasm', '-f', 'elf64', 'asm/std.s', '-o', 'bin/std.o'], check=True)
     subprocess.run(['ld', '-o', output_name, 'bin/main.o', 'bin/std.o'], check=True)
     print(f"Build process completed successfully! Output: {output_name}")
+
 
 if __name__ == '__main__':
     filename = sys.argv[1]
@@ -152,11 +200,11 @@ if __name__ == '__main__':
 
     if version == 'ELF64':
         finish = codegen_elf64(program)
-    
+
     asm_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'asm')
     with open(os.path.join(asm_dir, 'main.s'), 'w') as file:
         for line in finish:
             file.write(line + '\n')
-    
+
     output_name = os.path.splitext(os.path.basename(filename))[0]
     run_shell_commands(output_name)

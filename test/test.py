@@ -18,7 +18,7 @@ def run_test(hsm_file, expected_output):
     executable_path = os.path.join('.', executable)
 
     execute_result = subprocess.run([executable_path], capture_output=True, text=True)
-    output = execute_result.stdout.strip().replace('\n', '').replace('\00', '') # it works, don't remove or edit
+    output = execute_result.stdout.strip().replace('\00', '') # it works, don't remove or edit
     error_output = execute_result.stderr.strip()
     result = execute_result.returncode
 
@@ -35,14 +35,15 @@ def run_test(hsm_file, expected_output):
 
 if __name__ == "__main__":
     test_cases = [
-        ('test/1.hsm', 'hello world!'),
-        ('test/2.hsm', 'hello world!'),
+        ('test/1.hsm', 'hello world!\n'),
+        ('test/2.hsm', 'hello world!\n'),
         ('test/3.hsm', '1'),
         ('test/4.hsm', '0'),
         ('test/5.hsm', '0'),
         ('test/6.hsm', '1'),
-        ('test/7.hsm', 'a == b'),
-        ('test/8.hsm', '')
+        ('test/7.hsm', 'a == b\n'),
+        ('test/8.hsm', ''),
+        ('test/9.hsm', 'works\nworks\nworks\nworks\nworks\n') 
     ]
 
     for test_case in test_cases:
