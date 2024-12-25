@@ -18,6 +18,11 @@ def codegen_elf64(program):
     while i < len(program):
         line = program[i].strip()
 
+        # Skip lines that start with '$' (comment lines)
+        if line.startswith('$') or line == '_main:':
+            i += 1
+            continue
+        
         if ':' in line:
             label = line.split(':')[0].strip()
             labels[label] = i
@@ -47,9 +52,55 @@ def codegen_elf64(program):
             variables[vname] = value
             data.append(f'{vname} db {value}, 10, 0')
 
+        elif line.startswith('int'):
+            parts = line.split(' ')
+            vname = parts[1]
+            value = " ".join(parts[3:])
+            variables[vname] = value
+            data.append(f'{vname} dd {value}')
+
+        elif line.startswith('less'):
+            parts = line.split(' ')
+            c = parts[1]
+            a = parts[2]
+            b = parts[3]
+            result.append(f'mov eax, [{a}]')  
+            result.append(f'mov ebx, [{b}]')  
+            result.append(f'cmp eax, ebx')  
+            result.append(f'setl al')  
+            result.append(f'and al, 1')  
+            result.append(f'mov [{c}], al')  
+
+        elif line.startswith('more'):
+            parts = line.split(' ')
+            c = parts[1]
+            a = parts[2]
+            b = parts[3]
+            result.append(f'mov eax, [{a}]')  
+            result.append(f'mov ebx, [{b}]')  
+            result.append(f'cmp eax, ebx')  
+            result.append(f'setg al')  
+            result.append(f'and al, 1')  
+            result.append(f'mov [{c}], al')  
+        
+        elif line.startswith('equal'):
+            parts = line.split(' ')
+            c = parts[1]
+            a = parts[2]
+            b = parts[3]
+            result.append(f'mov eax, [{a}]')  
+            result.append(f'mov ebx, [{b}]')  
+            result.append(f'cmp eax, ebx')  
+            result.append(f'sete al')  
+            result.append(f'and al, 1')  
+            result.append(f'mov [{c}], al')  
+
         elif line.startswith('exit'):
             parts = line.split(' ')
-            result.append(f'mov rdi, {parts[1]}')
+            if parts[1] in variables:
+                result.append(f'mov rdi, [{parts[1]}]')
+            else:
+                result.append(f'mov rdi, {parts[1]}')
             result.append('mov rax, 60')
             result.append('syscall')
             break
@@ -59,6 +110,7 @@ def codegen_elf64(program):
     for line in data:
         result.append(line)
     return result
+
 
 def run_shell_commands():
     asm_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'asm')
