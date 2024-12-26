@@ -8,13 +8,13 @@ def eva(line, result, variables):
     vname = parts[0]
     expression = " ".join(parts[2:])
     
-    if expression.isdigit():  # Handle simple case like a = 3
+    if expression.strip().isdigit():  # Handle simple case like a = 3
         result.append(f'mov dword [{vname}], {expression}')
-    elif expression in variables:  # Handle case like a = c
-        result.append(f'mov eax, [{variables[expression]}]')
-        result.append(f'mov [{vname}], eax')
-    else:  # Handle arithmetic expressions like a = a + 1, a = b * 2, etc.
+        print(line)
+    
+    elif any(op in expression for op in '+-*/'):  # Handle arithmetic expressions like a = a + 1, a = b * 2, etc.
         # Extract the operator and operands
+        print(line)
         op = ''
         if '+' in expression:
             op = '+'
@@ -24,15 +24,14 @@ def eva(line, result, variables):
             op = '*'
         elif '/' in expression:
             op = '/'
-        
         if op:
             operands = expression.split(op)
+            
             result.append(f'mov eax, [{operands[0].strip()}]')  # Load the first operand
             if operands[1].strip().isdigit():
                 result.append(f'mov ebx, {operands[1].strip()}')
             else:
                 result.append(f'mov ebx, [{operands[1].strip()}]')  # Load the second operand
-        
             if op == '+':
                 result.append(f'add eax, ebx')
             elif op == '-':
@@ -43,6 +42,18 @@ def eva(line, result, variables):
                 result.append(f'div ebx')  # Note: div requires eax, edx as inputs
             
             result.append(f'mov dword [{vname}], eax')
+
+    elif expression in variables or parts[2] in variables:  # Handle case like a = c
+        if len(parts) == 4:
+            # then its array
+            result.append(f'mov eax, [{parts[2]} + {parts[3]}*4]')
+            result.append(f'mov [{vname}], eax')
+            return
+        elif len(parts) == 3:
+            result.append(f'mov eax, {variables[parts[2]]}')
+            result.append(f'mov [{vname}], eax')
+            return
+    
 
 
 def run_elf64(line, result, data, labels, variables, i):
@@ -92,6 +103,14 @@ def run_elf64(line, result, data, labels, variables, i):
         variables[vname] = value
         data.append(f'{vname} dd {value}')
 
+    elif line.lower().startswith('array'):
+        parts = line.split(' ')
+        vname = parts[1]
+        values = parts[3].split('.')
+        values = ', '.join(values)
+        variables[vname] = values
+        data.append(f'{vname} dd {values}')
+
     elif line.startswith('less'):
         parts = line.split(' ')
         c = parts[1]
@@ -103,7 +122,8 @@ def run_elf64(line, result, data, labels, variables, i):
         result.append(f'cmp eax, ebx')
         result.append(f'setl al')
         result.append(f'and al, 1')
-        result.append(f'mov [{c}], al')
+        result.append(f'movzx ecx, al')
+        result.append(f'mov [{c}], ecx')
 
     elif line.startswith('more'):
         parts = line.split(' ')
@@ -115,7 +135,8 @@ def run_elf64(line, result, data, labels, variables, i):
         result.append(f'cmp eax, ebx')
         result.append(f'setg al')
         result.append(f'and al, 1')
-        result.append(f'mov [{c}], al')
+        result.append(f'movzx ecx, al')
+        result.append(f'mov [{c}], ecx')
 
     elif line.startswith('equal'):
         parts = line.split(' ')
@@ -126,8 +147,8 @@ def run_elf64(line, result, data, labels, variables, i):
         result.append(f'mov ebx, [{b}]')
         result.append(f'cmp eax, ebx')
         result.append(f'sete al')
-        result.append(f'and al, 1')
-        result.append(f'mov [{c}], al')
+        result.append(f'movzx ecx, al')
+        result.append(f'mov [{c}], ecx')
 
     elif line.startswith('exit'):
         parts = line.split(' ')

@@ -2,7 +2,7 @@ output(ELF64)
 int a = 0
 int b = 5
 final:
-    string msg = "works?"
+    string msg = "works"
     call stdout msg
     a = a + 1
 	c = 0
