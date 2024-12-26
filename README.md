@@ -1,5 +1,5 @@
 # HASM (high assembly or high level assembly)
-Hasm is high assembly, while still resembly, via std libary or others, you can get things done but still resemble assembly
+H(igh)asm(bly) is high assembly, while still resembly, via std libary or others, you can get things done but still resemble assembly
 
 # feactures
 1. types:
