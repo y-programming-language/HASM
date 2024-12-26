@@ -1,17 +1,7 @@
 output(ELF64)
-int a = 0
-int b = 5
-final:
-    string msg = "works"
-    call stdout msg
-    a = a + 1
-	c = 0
-    less c a b
-    lc final c
-    exit 0
-    ret 
+
 _main:
-	int c = 0
-	less c a b
-    lc final c
-	exit 0
+	Array arr = 4.1.2.3.4.5
+	int a = 0
+    a = arr 0
+	exit a

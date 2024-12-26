@@ -1,0 +1,15 @@
+%syntax%
+output(ELF64)
+_main:
+string name = value
+array name = value
+exit value
+call stdout string
+lc label
+lc label value
+less c a b
+more c a b
+equal c a b
+varible = value
+varible = array index-1
+$ comment
