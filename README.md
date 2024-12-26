@@ -3,30 +3,28 @@ Hasm is high assembly, while still resembly, via std libary or others, you can g
 
 # feactures
 1. types:
-    > strong typed and should solve in compile time
+    - strong typed and should solve in compile time
 2. LC vs call:
-    > call is used to call some label on std libary or other, like  
-    > stdout
+    - call is used to call some label on std libary or other, like stdout
+    - on other hand LC calls labels that defined before _main:
 
-    > on other hand LC calls labels that defined before _main:
-
-3. comparasion
-    > you can compare using less more or equal commands
-    > uses syntax: 
+3. co mparasion
+    - you can compare using less more or equal commands
+    - uses syntax: 
     ```hasm
     command c a b
     ```
-    > where c is varible be stored (0 for false, 1 for true)
-    > and a b is varibles to be compared
+   - where c is varible be stored (0 for false, 1 for true)
+    - and a b is varibles to be compared
 
 4. LC
-    > LC has 2 ways be used: uncodicional and condicional
-    > uncodiconal jumps right away, like `LC label`
-    > codicional jumps jump if not 0, like `LC label 0`
+    - LC has 2 ways be used: uncodicional and condicional
+    - uncodiconal jumps right away, like `LC label`
+    - codicional jumps jump if not 0, like `LC label 0`
 
 5. comments
-    > to make different (and because i can) you use `$` for comments
-    > example: `$ this is comment`
+    - to make different (and because i can) you use `$` for comments
+    - example: `$ this is comment`
 
 # examples code
 while you can find in test/*.hsm heres how print hello world:
