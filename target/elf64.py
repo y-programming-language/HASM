@@ -41,7 +41,11 @@ def eva(line, result, variables):
     elif expression in variables or parts[2] in variables:  # Handle case like a = c
         if len(parts) == 4:
             # then its array
-            result.append(f'mov eax, [{parts[2]} + {parts[3]}*4]')
+            if parts[3] in variables:
+                result.append(f'mov eax, [{parts[3]}]')
+                result.append(f'mov eax, [arr + eax*4]')
+            else:
+                result.append(f'mov eax, [{parts[2]} + {parts[3]}*4]')
             result.append(f'mov [{vname}], eax')
             return
         elif len(parts) == 3:
@@ -111,8 +115,12 @@ def run_elf64(line, result, data, labels, variables, i):
         c = parts[1]
         a = parts[2]
         b = parts[3]
-        result.append(f'mov ebx, [{b}]')
-        result.append(f'mov eax, [{a}]')
+        if b.isdigit():
+            result.append(f'mov ebx, {b}')
+            result.append(f'mov eax, [{a}]')
+        else:
+            result.append(f'mov ebx, [{b}]')
+            result.append(f'mov eax, [{a}]')
         
         result.append(f'cmp eax, ebx')
         result.append(f'setl al')
@@ -125,8 +133,12 @@ def run_elf64(line, result, data, labels, variables, i):
         c = parts[1]
         a = parts[2]
         b = parts[3]
-        result.append(f'mov eax, [{a}]')
-        result.append(f'mov ebx, [{b}]')
+        if b.isdigit():
+            result.append(f'mov ebx, {b}')
+            result.append(f'mov eax, [{a}]')
+        else:
+            result.append(f'mov ebx, [{b}]')
+            result.append(f'mov eax, [{a}]')
         result.append(f'cmp eax, ebx')
         result.append(f'setg al')
         result.append(f'and al, 1')
@@ -138,8 +150,12 @@ def run_elf64(line, result, data, labels, variables, i):
         c = parts[1]
         a = parts[2]
         b = parts[3]
-        result.append(f'mov eax, [{a}]')
-        result.append(f'mov ebx, [{b}]')
+        if b.isdigit():
+            result.append(f'mov ebx, {b}')
+            result.append(f'mov eax, [{a}]')
+        else:
+            result.append(f'mov ebx, [{b}]')
+            result.append(f'mov eax, [{a}]')
         result.append(f'cmp eax, ebx')
         result.append(f'sete al')
         result.append(f'movzx ecx, al')

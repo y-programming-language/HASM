@@ -44,7 +44,8 @@ if __name__ == "__main__":
         ('test/7.hsm', 'a == b\n'),
         ('test/8.hsm', ''),
         ('test/9.hsm', 'works\nworks\nworks\nworks\nworks\n'),
-        ('test/10.hsm', '4')
+        ('test/10.hsm', '4'),
+        ('test/11.hsm', '1')
     ]
 
     for test_case in test_cases:
